@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Telegram QR Generator — With Username & Link Support</title>
+  <style>
+    :root{--telegram-blue:#0088cc;--telegram-dark:#17212b;--telegram-light:#2b5278;--bg:#0f1724;--card:#0b1220;color-scheme:dark}
+    *{box-sizing:border-box}
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;min-height:100vh;margin:0;background:linear-gradient(180deg,#071028 0%,#021026 100%);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:28px}
+    .wrap{width:100%;max-width:920px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;padding:22px;box-shadow:0 8px 30px rgba(2,6,23,0.6);border:1px solid rgba(0,136,204,0.1)}
+    header{display:flex;gap:16px;align-items:center;justify-content:space-between}
+    .header-content{display:flex;gap:16px;align-items:center}
+    header h1{font-size:18px;margin:0}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
+    .card{background:rgba(255,255,255,0.02);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.05)}
+    label{display:block;font-size:13px;color:#bcd3ff;margin-bottom:6px}
+    input[type=text],textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:inherit;outline:none}
+    textarea{min-height:84px;resize:vertical}
+    .inline{display:flex;gap:8px}
+    button{background:var(--telegram-blue);border:none;padding:10px 12px;border-radius:8px;color:white;cursor:pointer;font-weight:600;transition:all 0.2s}
+    button:hover{background:var(--telegram-light);transform:translateY(-1px)}
+    button:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+    .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .qr-preview{display:flex;flex-direction:column;align-items:center;gap:12px;padding:10px}
+    .qr-preview img{width:260px;height:260px;background:white;border-radius:6px;border:2px solid var(--telegram-blue)}
+    .note{font-size:13px;color:#9fb7ff}
+    .footer{margin-top:14px;font-size:13px;color:#9fb7ff}
+    .small{font-size:12px;color:#9fb7ff}
+    .topbar{display:flex;gap:10px;align-items:center}
+    .copy-btn{background:#182133;border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:8px;color:#bcd3ff;transition:all 0.2s}
+    .copy-btn:hover{background:#1f2a40;transform:translateY(-1px)}
+    .tab-container{margin-bottom:16px}
+    .tabs{display:flex;gap:8px;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:8px}
+    .tab{background:transparent;border:none;color:#9fb7ff;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px;transition:all 0.2s}
+    .tab.active{background:var(--telegram-blue);color:white}
+    .tab:hover:not(.active){background:rgba(0,136,204,0.1)}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    .contact-options{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .telegram-logo{width:56px;height:56px;border-radius:50%;background:var(--telegram-blue);display:flex;align-items:center;justify-content:center;font-size:28px;color:white;position:relative}
+    .telegram-logo::after{content:"✈️";position:absolute;font-size:24px}
+    .telegram-badge{background:var(--telegram-blue);color:white;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-left:8px}
+    .telegram-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+    .telegram-header h1{display:flex;align-items:center}
+    .watermark{position:fixed;bottom:20px;right:20px;opacity:0.1;font-size:120px;z-index:-1;color:var(--telegram-blue)}
+    
+    /* QR Type indicator */
+    .qr-type {
+      font-size: 12px;
+      color: var(--telegram-blue);
+      font-weight: 600;
+      margin-bottom: 5px;
+      text-align: center;
+    }
+    
+    /* Type selector */
+    .type-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    .type-btn {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .type-btn.active {
+      background: var(--telegram-blue);
+      border-color: var(--telegram-blue);
+    }
+    .type-btn:hover:not(.active) {
+      background: rgba(0,136,204,0.1);
+    }
+    
+    /* Username preview */
+    .username-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .username-prefix {
+      color: #9fb7ff;
+    }
+    
+    @media(max-width:880px){.grid{grid-template-columns:1fr}.qr-preview img{width:200px;height:200px}.actions,.contact-options{flex-direction:column}.watermark{display:none}}
+  </style>
+</head>
+<body>
+  <div class="watermark">Telegram</div>
+  
+  <div class="wrap" role="main">
+    <header>
+      <div class="header-content">
+        <div class="telegram-logo"></div>
+        <div>
+          <div class="telegram-header">
+            <h1>Telegram QR Generator</h1>
+            <span class="telegram-badge">OFFICIAL</span>
+          </div>
+          <div class="small">Generate QR codes for Telegram usernames, groups, channels, or direct links.</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card" aria-labelledby="inputs">
+        <div class="tab-container">
+          <div class="tabs">
+            <button class="tab active" data-tab="username">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM5 8a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm4 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm2.5 4.5a.5.5 0 0 1-.5.5h-5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v1z"/>
+              </svg>
+              Username
+            </button>
+            <button class="tab" data-tab="link">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M4.715 6.542L3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.002 1.002 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/>
+                <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243L6.586 4.672z"/>
+              </svg>
+              Direct Link
+            </button>
+            <button class="tab" data-tab="message">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M16 8c0 3.866-3.582 7-8 7a9.06 9.06 0 0 1-2.347-.306c-.584.296-1.925.864-4.181 1.234-.2.032-.352-.176-.273-.362.354-.836.674-1.95.77-2.966C.744 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7zM5 8a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+              </svg>
+              Message
+            </button>
+          </div>
+        </div>
+
+        <div id="username" class="tab-content active">
+          <h2 id="inputs" style="font-size:15px;margin:0 0 10px 0;display:flex;align-items:center">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="var(--telegram-blue)" style="margin-right:8px">
+              <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM5 8a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm4 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm2.5 4.5a.5.5 0 0 1-.5.5h-5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v1z"/>
+            </svg>
+            Telegram Username
+          </h2>
+
+          <label for="telegramUsername">Username (without @)</label>
+          <input id="telegramUsername" type="text" placeholder="Ex: username" />
+
+          <div class="username-preview">
+            <span class="username-prefix">t.me/</span>
+            <span id="usernamePreview" style="font-weight:600">username</span>
+          </div>
+
+          <div class="actions">
+            <button id="genUsername">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M14 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2H2z"/>
+                <path d="M6 5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm6-8h-4v1h4V5zm0 4h-4v1h4V9zm0 4h-4v1h4v-1z"/>
+              </svg>
+              Generate Username QR
+            </button>
+            <button id="openUsername" class="copy-btn" style="display:none">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+              </svg>
+              Open Profile
+            </button>
+            <button id="copyUsername" class="copy-btn" style="display:none">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+              </svg>
+              Copy Link
+            </button>
+          </div>
+        </div>
+
+        <div id="link" class="tab-content">
+          <h2 style="font-size:15px;margin:0 0 10px 0;display:flex;align-items:center">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="var(--telegram-blue)" style="margin-right:8px">
+              <path d="M4.715 6.542L3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.002 1.002 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/>
+              <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243L6.586 4.672z"/>
+            </svg>
+            Telegram Direct Link
+          </h2>
+
+          <label for="telegramLink">Full Telegram Link</label>
+          <input id="telegramLink" type="text" placeholder="Ex: https://t.me/username or https://t.me/joinchat/xxxxx" />
+
+          <div class="type-selector">
+            <div class="type-btn active" data-type="profile">Profile</div>
+            <div class="type-btn" data-type="group">Group</div>
+            <div class="type-btn" data-type="channel">Channel</div>
+            <div class="type-btn" data-type="bot">Bot</div>
+          </div>
+
+          <div class="actions">
+            <button id="genLink">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M14 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2H2z"/>
+                <path d="M6 5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm6-8h-4v1h4V5zm0 4h-4v1h4V9zm0 4h-4v1h4v-1z"/>
+              </svg>
+              Generate Link QR
+            </button>
+            <button id="openLinkBtn" class="copy-btn" style="display:none">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+              </svg>
+              Open Link
+            </button>
+            <button id="copyLinkBtn" class="copy-btn" style="display:none">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+              </svg>
+              Copy Link
+            </button>
+          </div>
+        </div>
+
+        <div id="message" class="tab-content">
+          <h2 style="font-size:15px;margin:0 0 10px 0;display:flex;align-items:center">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="var(--telegram-blue)" style="margin-right:8px">
+              <path d="M16 8c0 3.866-3.582 7-8 7a9.06 9.06 0 0 1-2.347-.306c-.584.296-1.925.864-4.181 1.234-.2.032-.352-.176-.273-.362.354-.836.674-1.95.77-2.966C.744 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7zM5 8a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+            </svg>
+            Telegram Message Link
+          </h2>
+
+          <label for="messageUsername">Username or Chat ID</label>
+          <input id="messageUsername" type="text" placeholder="Ex: username or +1234567890" />
+
+          <label for="messageText">Message Text (optional)</label>
+          <textarea id="messageText" placeholder="Hello! I'd like to connect... (optional)"></textarea>
+
+          <div class="actions">
+            <button id="genMessage">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M14 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2H2z"/>
+                <path d="M6 5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm6-8h-4v1h4V5zm0 4h-4v1h4V9zm0 4h-4v1h4v-1z"/>
+              </svg>
+              Generate Message QR
+            </button>
+            <button id="openMessage" class="copy-btn" style="display:none">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+              </svg>
+              Open Chat
+            </button>
+            <button id="copyMessage" class="copy-btn" style="display:none">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+              </svg>
+              Copy Link
+            </button>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="note">Generated links use Telegram's official format: <code>t.me/username</code>, <code>https://t.me/username</code>, or <code>https://t.me/share/url?text=message</code></div>
+          <div style="margin-top:8px" class="small">Note: QR codes can be scanned by any QR scanner app to open Telegram directly.</div>
+        </div>
+      </section>
+
+      <aside class="card qr-preview" aria-label="QR code preview">
+        <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+          <strong>QR Preview</strong>
+          <div class="small">Download PNG or copy link</div>
+        </div>
+
+        <div id="qrType" class="qr-type"></div>
+
+        <div id="linkDisplay" style="font-size:16px;font-weight:600;color:#dff0ff;text-align:center;max-width:280px;word-break:break-all"></div>
+
+        <img id="qrImg" alt="QR code preview" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'></svg>" />
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%">
+          <a id="downloadBtn" class="small" style="text-decoration:none;display:none" download="telegram-qr.png">
+            <button>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+              </svg>
+              Download PNG
+            </button>
+          </a>
+          <button id="reset" class="copy-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px">
+              <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+              <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+            </svg>
+            Clear All
+          </button>
+        </div>
+
+        <div id="linkArea" style="word-break:break-all;max-width:320px;text-align:center;display:none">
+          <div class="small">Generated Link:</div>
+          <div id="linkText" style="font-size:13px;color:#dff0ff"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+  <script>
+    // DOM elements
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const typeBtns = document.querySelectorAll('.type-btn');
+    const qrType = document.getElementById('qrType');
+    const usernamePreview = document.getElementById('usernamePreview');
+    const telegramUsername = document.getElementById('telegramUsername');
+    const telegramLink = document.getElementById('telegramLink');
+    const messageUsername = document.getElementById('messageUsername');
+    const messageText = document.getElementById('messageText');
+    const qrImg = document.getElementById('qrImg');
+    const linkDisplay = document.getElementById('linkDisplay');
+    const linkText = document.getElementById('linkText');
+    const linkArea = document.getElementById('linkArea');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const resetBtn = document.getElementById('reset');
+
+    // Tab functionality
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabId = tab.getAttribute('data-tab');
+        
+        // Update active tab
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        // Show active tab content
+        tabContents.forEach(content => {
+          content.classList.remove('active');
+          if (content.id === tabId) {
+            content.classList.add('active');
+          }
+        });
+      });
+    });
+
+    // Type selector functionality
+    typeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        typeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // Username preview
+    telegramUsername.addEventListener('input', () => {
+      const username = telegramUsername.value.trim();
+      usernamePreview.textContent = username || 'username';
+    });
+
+    // Generate QR for username
+    document.getElementById('genUsername').addEventListener('click', () => {
+      const username = telegramUsername.value.trim();
+      
+      if (!username) {
+        alert('Please enter a Telegram username');
+        return;
+      }
+      
+      // Clean username (remove @ if present)
+      const cleanUsername = username.replace('@', '');
+      
+      // Create Telegram URL
+      const url = `https://t.me/${cleanUsername}`;
+      
+      generateQRCode(url, `@${cleanUsername}`, 'Username QR Code');
+      
+      // Show buttons
+      document.getElementById('openUsername').style.display = 'inline-block';
+      document.getElementById('copyUsername').style.display = 'inline-block';
+      
+      // Set button events
+      const openBtn = document.getElementById('openUsername');
+      const copyBtn = document.getElementById('copyUsername');
+      
+      openBtn.onclick = () => window.open(url, '_blank');
+      copyBtn.onclick = () => copyToClipboard(url, copyBtn);
+    });
+
+    // Generate QR for direct link
+    document.getElementById('genLink').addEventListener('click', () => {
+      let link = telegramLink.value.trim();
+      
+      if (!link) {
+        alert('Please enter a Telegram link');
+        return;
+      }
+      
+      // Ensure link starts with https://
+      if (!link.startsWith('http')) {
+        link = `https://${link}`;
+      }
+      
+      // Validate Telegram link
+      if (!link.includes('t.me/')) {
+        alert('Please enter a valid Telegram link (should contain t.me/)');
+        return;
+      }
+      
+      const activeType = document.querySelector('.type-btn.active').dataset.type;
+      const typeNames = {
+        profile: 'Profile Link',
+        group: 'Group Link',
+        channel: 'Channel Link',
+        bot: 'Bot Link'
+      };
+      
+      generateQRCode(link, link, `${typeNames[activeType] || 'Telegram Link'} QR Code`);
+      
+      // Show buttons
+      document.getElementById('openLinkBtn').style.display = 'inline-block';
+      document.getElementById('copyLinkBtn').style.display = 'inline-block';
+      
+      // Set button events
+      const openBtn = document.getElementById('openLinkBtn');
+      const copyBtn = document.getElementById('copyLinkBtn');
+      
+      openBtn.onclick = () => window.open(link, '_blank');
+      copyBtn.onclick = () => copyToClipboard(link, copyBtn);
+    });
+
+    // Generate QR for message
+    document.getElementById('genMessage').addEventListener('click', () => {
+      const username = messageUsername.value.trim();
+      const text = messageText.value.trim();
+      
+      if (!username) {
+        alert('Please enter a username or chat ID');
+        return;
+      }
+      
+      // Clean username (remove @ if present)
+      const cleanUsername = username.replace('@', '');
+      
+      // Create Telegram message URL
+      let url;
+      if (text) {
+        // Use share/url format for messages with text
+        url = `https://t.me/share/url?url=https://t.me/${cleanUsername}&text=${encodeURIComponent(text)}`;
+      } else {
+        // Direct chat link for messages without text
+        url = `https://t.me/${cleanUsername}`;
+      }
+      
+      const displayText = text ? `Message to @${cleanUsername}` : `Chat with @${cleanUsername}`;
+      generateQRCode(url, displayText, 'Message QR Code');
+      
+      // Show buttons
+      document.getElementById('openMessage').style.display = 'inline-block';
+      document.getElementById('copyMessage').style.display = 'inline-block';
+      
+      // Set button events
+      const openBtn = document.getElementById('openMessage');
+      const copyBtn = document.getElementById('copyMessage');
+      
+      openBtn.onclick = () => window.open(url, '_blank');
+      copyBtn.onclick = () => copyToClipboard(url, copyBtn);
+    });
+
+    // Generate QR code function
+    function generateQRCode(url, displayText, typeText) {
+      QRCode.toDataURL(url, { width: 260, height: 260, margin: 1 }, (err, qrDataUrl) => {
+        if (err) {
+          console.error(err);
+          alert('Error generating QR code');
+          return;
+        }
+        
+        qrImg.src = qrDataUrl;
+        linkDisplay.textContent = displayText;
+        linkText.textContent = url;
+        qrType.textContent = typeText;
+        
+        // Show download button and link area
+        downloadBtn.style.display = 'inline-block';
+        linkArea.style.display = 'block';
+        downloadBtn.href = qrDataUrl;
+        
+        qrType.style.display = 'block';
+      });
+    }
+
+    // Copy to clipboard function
+    function copyToClipboard(text, button) {
+      navigator.clipboard.writeText(text).then(() => {
+        // Show feedback
+        const originalText = button.innerHTML;
+        button.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:6px"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>Copied!';
+        setTimeout(() => {
+          button.innerHTML = originalText;
+        }, 2000);
+      });
+    }
+
+    // Reset form
+    resetBtn.addEventListener('click', () => {
+      // Clear all form fields
+      telegramUsername.value = '';
+      telegramLink.value = '';
+      messageUsername.value = '';
+      messageText.value = '';
+      
+      // Clear QR preview
+      qrImg.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'></svg>";
+      linkDisplay.textContent = '';
+      linkText.textContent = '';
+      qrType.style.display = 'none';
+      
+      // Hide all action buttons
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.style.display = 'none';
+      });
+      downloadBtn.style.display = 'none';
+      linkArea.style.display = 'none';
+      
+      // Reset type selector
+      typeBtns.forEach((btn, index) => {
+        btn.classList.toggle('active', index === 0);
+      });
+      
+      // Reset username preview
+      usernamePreview.textContent = 'username';
+    });
+
+    // Initialize
+    telegramLink.addEventListener('input', () => {
+      const link = telegramLink.value;
+      if (link.includes('t.me/joinchat/') || link.includes('+')) {
+        // Auto-select group for invite links
+        typeBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.type === 'group');
+        });
+      } else if (link.includes('t.me/') && !link.includes('joinchat')) {
+        // Try to auto-detect type
+        const path = link.split('t.me/')[1];
+        if (path && path.length > 0) {
+          if (path.startsWith('+')) {
+            typeBtns.forEach(btn => {
+              btn.classList.toggle('active', btn.dataset.type === 'group');
+            });
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
