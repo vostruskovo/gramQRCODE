@@ -1,0 +1,239 @@
+Telegram QR Code Generator
+Um gerador de QR Code para Telegram com nome persistente, desenvolvido como Progressive Web App (PWA). Gere QR Codes personalizados com nome sobreposto para facilitar conexões no Telegram.
+
+✨ Funcionalidades
+Gerador de QR Code para Telegram: Cria links diretos para iniciar conversas no Telegram
+
+Nome Persistente: Adiciona automaticamente o nome do contato na mensagem inicial
+
+Tema Automático: Detecta e aplica tema claro/escuro baseado nas preferências do sistema
+
+Modo Compacto: Opção para interface mais compacta em dispositivos menores
+
+Exportação PNG: Gera imagem PNG pronta para compartilhar com nome sobreposto
+
+PWA: Instalável como aplicativo nativo (Android, iOS, Desktop)
+
+Offline: Funciona sem conexão à internet após instalação
+
+Keyboard Shortcuts: Ctrl+G para gerar QR Code rapidamente
+
+🚀 Como Usar
+Online
+Acesse a versão online do aplicativo aqui.
+
+Instalação Local
+Clone o repositório ou baixe os arquivos
+
+Navegue até a pasta do projeto
+
+Abra index.html em qualquer navegador moderno
+
+🎯 Como Funciona
+1. Preencha as Informações
+Nome do contato: Nome que aparecerá na mensagem
+
+Username do Telegram: Nome de usuário (@username) do destinatário
+
+Mensagem inicial: Texto que será enviado automaticamente (opcional)
+
+2. Escolha o Método de Persistência
+Etiqueta inteligente: Adiciona "Nome - Mensagem" no início
+
+Prefixo com nome: Adiciona "👤 Nome: Mensagem" no início
+
+3. Gere o QR Code
+Clique em "Gerar QR" ou pressione Ctrl+G
+
+Visualize a prévia do QR Code
+
+Abra o link diretamente no Telegram
+
+Copie o link para compartilhar
+
+4. Exporte como Imagem
+Clique em "Exportar PNG com Nome"
+
+Baixe uma imagem personalizada com o QR Code e informações
+
+Imagem inclui: QR Code, nome do contato, username e descrição
+
+🛠 Tecnologias Utilizadas
+HTML5: Estrutura da aplicação
+
+CSS3: Estilos com variáveis CSS para temas
+
+JavaScript: Lógica da aplicação
+
+QRCode.js: Biblioteca para geração de QR Codes
+
+Service Workers: Para funcionalidade offline
+
+Web Manifest: Para instalação como PWA
+
+📱 Instalação como PWA
+Android
+Abra o aplicativo no Chrome
+
+Toque no menu (⋮) e selecione "Instalar aplicativo"
+
+Confirme a instalação
+
+iOS
+Abre no Safari
+
+Toque no ícone de compartilhar (□ com ↑)
+
+Role para baixo e selecione "Adicionar à Tela de Início"
+
+Desktop (Chrome/Edge)
+Clique no ícone de instalação na barra de endereços
+
+Ou vá em Menu → "Instalar Telegram QR Generator"
+
+🎨 Personalização
+Temas
+Automático: Segue as preferências do sistema
+
+Escuro: Tema escuro com fundo azul escuro
+
+Claro: Tema claro com fundo branco
+
+Modo Compacto
+Ative o modo compacto para uma interface mais densa, ideal para telas menores.
+
+🔧 Configuração Avançada
+Service Worker
+Para funcionamento offline completo, crie um arquivo tgqrbuilder-sw.js na raiz do servidor:
+
+javascript
+const CACHE_NAME = 'tg-qr-v1';
+const urlsToCache = [
+  './',
+  './index.html',
+  'https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+  );
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
+  );
+});
+Ícones PWA
+Adicione os seguintes ícones na pasta raiz:
+
+icons-192.png (192×192 pixels)
+
+icons-512.png (512×512 pixels)
+
+🌐 Hospedagem
+GitHub Pages
+Faça upload dos arquivos para um repositório GitHub
+
+Vá em Settings → Pages
+
+Selecione a branch principal
+
+Servidor Personalizado
+Copie todos os arquivos para a raiz do seu servidor web. Certifique-se de que:
+
+O servidor sirva arquivos .js com o MIME type correto
+
+O arquivo manifest.json seja acessível
+
+📄 Estrutura de Arquivos
+text
+telegram-qr-generator/
+├── index.html          # Aplicação principal
+├── tgqrbuilder-sw.js   # Service Worker (opcional)
+├── icons-192.png       # Ícone PWA 192x192 (opcional)
+├── icons-512.png       # Ícone PWA 512x512 (opcional)
+└── README.md           # Este arquivo
+🔒 Privacidade e Segurança
+Sem Backend: Tudo processado localmente no navegador
+
+Sem Rastreamento: Nenhum dado é enviado para servidores externos
+
+Sem Cookies: Não utiliza cookies de terceiros
+
+Armazenamento Local: Apenas preferências de tema no localStorage
+
+📱 Compatibilidade
+Chrome 50+
+
+Firefox 48+
+
+Safari 11.1+
+
+Edge 79+
+
+iOS Safari 11.3+
+
+Android Chrome 50+
+
+🐛 Solução de Problemas
+QR Code não gera
+Verifique se preencheu nome e username
+
+Certifique-se de que está online (para carregar a biblioteca QRCode)
+
+Recarregue a página
+
+PWA não instala
+Verifique se está usando HTTPS (exceto localhost)
+
+Certifique-se de que o manifest.json está acessível
+
+Limpe cache do navegador
+
+Tema não muda
+Limpe cache do navegador
+
+Verifique as preferências do sistema
+
+🤝 Contribuindo
+Contribuições são bem-vindas! Siga estes passos:
+
+Fork o projeto
+
+Crie uma branch para sua feature (git checkout -b feature/AmazingFeature)
+
+Commit suas mudanças (git commit -m 'Add some AmazingFeature')
+
+Push para a branch (git push origin feature/AmazingFeature)
+
+Abra um Pull Request
+
+📄 Licença
+Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
+
+👏 Créditos
+Desenvolvido por: [Seu Nome]
+
+Baseado em: WhatsApp QR Generator v3.1
+
+Biblioteca QR Code: QRCode.js
+
+Ícones: Forneça seus próprios ícones para PWA
+
+📞 Suporte
+Encontrou um problema ou tem uma sugestão?
+
+Abra uma issue no GitHub
+
+Entre em contato via [seu email/telegram]
+
+Versão: 3.1
+Última atualização: 2024
+Status: Em produção
+
+⭐ Se este projeto te ajudou, considere dar uma estrela no GitHub!
+
