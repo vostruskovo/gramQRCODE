@@ -1,0 +1,200 @@
+Telegram QR Code Generator
+A modern, responsive web application for generating QR codes for Telegram usernames, groups, channels, and direct message links.
+
+https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white
+https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white
+https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black
+https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white
+
+🌟 Features
+📱 Multiple QR Code Types
+Username QR: Generate QR codes for Telegram usernames (@username → t.me/username)
+
+Direct Link QR: Generate QR codes for any Telegram link (groups, channels, bots)
+
+Message QR: Create QR codes with pre-filled messages for quick communication
+
+🎨 Modern Interface
+Dark theme with Telegram's official blue color scheme (#0088cc)
+
+Fully responsive design for mobile and desktop
+
+Real-time preview of generated QR codes
+
+Clean, intuitive user interface
+
+⚡ Quick Actions
+Download QR Code as PNG image
+
+Copy Link to clipboard with visual feedback
+
+Open Link directly in Telegram
+
+Clear All with one click
+
+🔧 Smart Features
+Auto-detection of link types (profile/group/channel/bot)
+
+Username validation and formatting
+
+Instant QR code generation
+
+Link preview before generating
+
+🚀 How to Use
+Option 1: Live Demo
+Simply open the index.html file in any modern web browser. No installation or dependencies required!
+
+Option 2: Deploy Online
+Upload all files to your web server
+
+Access via browser
+
+No backend required - works entirely in the browser
+
+📋 Usage Guide
+1. Generate Username QR Code
+Select the Username tab
+
+Enter your Telegram username (without @ symbol)
+
+Click "Generate Username QR"
+
+Download or share the QR code
+
+2. Generate Direct Link QR Code
+Select the Direct Link tab
+
+Paste any Telegram link:
+
+Profile: https://t.me/username
+
+Group: https://t.me/joinchat/xxxxx
+
+Channel: https://t.me/channelname
+
+Bot: https://t.me/botname
+
+Select link type (auto-detected)
+
+Generate QR code
+
+3. Generate Message QR Code
+Select the Message tab
+
+Enter username or chat ID
+
+Add optional pre-filled message
+
+Generate QR that opens chat with message
+
+🛠️ Technical Details
+Built With
+HTML5: Semantic markup and structure
+
+CSS3: Modern styling with Flexbox and CSS Grid
+
+JavaScript: Dynamic functionality and QR generation
+
+QRCode.js: Client-side QR code generation library
+
+Dependencies
+QRCode.js - For generating QR codes
+
+Browser Support
+Chrome 60+
+
+Firefox 55+
+
+Safari 11+
+
+Edge 79+
+
+Opera 47+
+
+📁 File Structure
+text
+telegram-qr-generator/
+│
+├── index.html              # Main application file
+├── README.md              # This documentation
+│
+└── (optional) assets/     # For additional resources
+    ├── images/
+    └── icons/
+🎯 Use Cases
+For Individuals
+Add QR code to business cards
+
+Share contact information quickly
+
+Create physical QR codes for profiles
+
+For Businesses
+Generate QR codes for Telegram support groups
+
+Create QR codes for channel subscriptions
+
+Share bot links in physical locations
+
+For Events
+Create QR codes for event Telegram groups
+
+Share speaker contact information
+
+Distribute materials via channel links
+
+🔒 Privacy & Security
+100% Client-side: All processing happens in your browser
+
+No Data Storage: No information is sent to any server
+
+No Tracking: No analytics or user tracking
+
+Open Source: Fully transparent code
+
+🤝 Contributing
+Contributions are welcome! Here's how you can help:
+
+Fork the repository
+
+Create a feature branch (git checkout -b feature/AmazingFeature)
+
+Commit your changes (git commit -m 'Add some AmazingFeature')
+
+Push to the branch (git push origin feature/AmazingFeature)
+
+Open a Pull Request
+
+Areas for Contribution
+Add more QR code styling options
+
+Implement additional language translations
+
+Add batch QR code generation
+
+Improve mobile responsiveness
+
+Add export options (SVG, PDF)
+
+📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+⚠️ Disclaimer
+This tool is not officially affiliated with Telegram Messenger LLP. Telegram is a registered trademark of Telegram Messenger LLP. Use at your own discretion.
+
+📞 Support
+If you encounter any issues or have questions:
+
+Check the Issues page
+
+Create a new issue with detailed information
+
+For security issues, please contact directly
+
+🌐 Related Projects
+WhatsApp QR Generator - Similar tool for WhatsApp
+
+Social Media QR Suite - Multi-platform QR generator
+
+Made with ❤️ for the Telegram community
